@@ -5,6 +5,7 @@ import Hero from "./components/Hero";
 import About from "./components/About";
 import Work from "./components/Work";
 import Contact from "./components/Contact";
+import Footer from "./components/Footer";
 
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
@@ -81,10 +82,21 @@ export default function App() {
   const cursor = useCustomCursor();
   const active = useActiveSection(NAV_ITEMS.map((n) => n.id));
   const [loaded, setLoaded] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashFading, setSplashFading] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 120);
     return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => setSplashFading(true), 650);
+    const removeTimer = setTimeout(() => setShowSplash(false), 1150);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+    };
   }, []);
 
   return (
@@ -102,6 +114,44 @@ export default function App() {
         transition: "background 0.4s ease, color 0.4s ease",
       }}
     >
+      {showSplash && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 300,
+            background: colors.bg,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: splashFading ? 0 : 1,
+            transition: "opacity 0.5s ease",
+            pointerEvents: splashFading ? "none" : "auto",
+          }}
+        >
+          <p className="jd-serif" style={{ fontSize: 46, color: colors.text, margin: 0, letterSpacing: 1 }}>
+            JD
+          </p>
+          <div style={{ display: "flex", gap: 6, marginTop: 20 }}>
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: colors.lime,
+                  animation: "jd-pulse 1.1s ease infinite",
+                  animationDelay: `${i * 0.15}s`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {cursor.enabled && (
         <div
           aria-hidden="true"
@@ -195,6 +245,7 @@ export default function App() {
         <Work colors={colors} loaded={loaded} />
         <Contact colors={colors} loaded={loaded} />
       </main>
+      <Footer colors={colors} />
     </div>
   );
 }
