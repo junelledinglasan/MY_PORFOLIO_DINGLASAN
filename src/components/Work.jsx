@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ExternalLink, FileDown, Plus, X, Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, FileDown, Plus, X, Pencil, Trash2, Eye } from "lucide-react";
 import ProjectComposer from "./ProjectComposer";
 import AuthGate from "./AuthGate";
 
@@ -164,7 +164,17 @@ function Lightbox({ images, index, onClose, onNav, colors }) {
 }
 
 function ProjectCard({ project, colors, isAdmin, onEdit, onDelete, onImageClick }) {
-  const { title, description, tags, link, fileName, fileData, images } = project;
+  const { id, title, description, tags, link, fileName, fileData, images, views } = project;
+
+  useEffect(() => {
+    fetch("/api/track-view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
   return (
     <div
       className="jd-card"
@@ -182,7 +192,20 @@ function ProjectCard({ project, colors, isAdmin, onEdit, onDelete, onImageClick 
             {title}
           </h3>
           {isAdmin && (
-            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 11,
+                  color: colors.textMuted,
+                  fontFamily: "'Space Mono', monospace",
+                }}
+              >
+                <Eye size={12} /> {views || 0}
+              </span>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
               <button
                 type="button"
                 onClick={onEdit}
@@ -221,6 +244,7 @@ function ProjectCard({ project, colors, isAdmin, onEdit, onDelete, onImageClick 
               >
                 <Trash2 size={13} />
               </button>
+              </div>
             </div>
           )}
         </div>

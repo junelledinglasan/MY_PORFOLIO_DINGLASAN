@@ -24,6 +24,7 @@ export default async function handler(req, res) {
           created_at TIMESTAMPTZ DEFAULT NOW()
         );
       `;
+      await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS views INT DEFAULT 0;`;
       const rows = await sql`SELECT * FROM projects ORDER BY created_at DESC;`;
       const projects = rows.map((r) => ({
         id: r.id,
@@ -34,6 +35,7 @@ export default async function handler(req, res) {
         fileName: r.file_name || "",
         fileData: r.file_data || "",
         images: r.images || [],
+        views: r.views || 0,
       }));
       res.status(200).json(projects);
     } catch (err) {
