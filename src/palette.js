@@ -1,0 +1,26 @@
+export const PALETTE = {
+  dark: {
+    bg: "#081512",
+    surface: "#0F211B",
+    text: "#F3F7F1",
+    textMuted: "#93AB9F",
+    line: "#1E362C",
+    lime: "#8CFA5B",
+    limeDeep: "#3F8A26",
+    amber: "#FFB627",
+    sky: "#5FD1E8",
+    dot: "#16281F",
+  },
+  light: {
+    bg: "#F3F7F1",
+    surface: "#FFFFFF",
+    text: "#0C1A14",
+    textMuted: "#526158",
+    line: "#D9E3DA",
+    lime: "#3F8A26",
+    limeDeep: "#2C6A1B",
+    amber: "#B5750E",
+    sky: "#1E7A8C",
+    dot: "#E1EBE2",
+  },
+};

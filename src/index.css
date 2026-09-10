@@ -1,0 +1,106 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,340;9..144,480;9..144,650&family=Space+Mono:wght@400;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.jd-serif {
+  font-family: "Fraunces", Georgia, serif;
+}
+
+.jd-link {
+  position: relative;
+  text-decoration: none;
+}
+.jd-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.jd-link:hover::after {
+  transform: scaleX(1);
+}
+
+.jd-btn {
+  transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease;
+}
+.jd-btn:hover {
+  transform: translateY(-2px);
+}
+
+.jd-chip {
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.jd-chip:hover {
+  transform: translateY(-2px);
+}
+
+.jd-card {
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.jd-card:hover {
+  transform: translateY(-3px);
+}
+
+@keyframes jd-draw {
+  from {
+    stroke-dashoffset: 480;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+@keyframes jd-rise {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes jd-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes jd-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jd-rise,
+  .jd-draw-line,
+  .jd-marquee-track {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
