@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ExternalLink, FileDown, Plus, X } from "lucide-react";
 import ProjectComposer from "./ProjectComposer";
+import AuthGate from "./AuthGate";
 
 function ImageGallery({ images, colors }) {
   if (!images || images.length === 0) return null;
@@ -10,7 +11,7 @@ function ImageGallery({ images, colors }) {
       <img
         src={images[0]}
         alt=""
-        style={{ width: "100%", maxHeight: 340, objectFit: "cover", display: "block" }}
+        style={{ width: "100%", height: 240, objectFit: "cover", objectPosition: "center", display: "block" }}
       />
     );
   }
@@ -227,7 +228,13 @@ export default function Work({ colors, loaded }) {
         </button>
       </div>
 
-      {showComposer && <ProjectComposer colors={colors} onAdded={loadProjects} />}
+      {showComposer && (
+        <AuthGate colors={colors}>
+          {(token, logout) => (
+            <ProjectComposer colors={colors} onAdded={loadProjects} authToken={token} onLogout={logout} />
+          )}
+        </AuthGate>
+      )}
     </section>
   );
 }

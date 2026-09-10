@@ -10,7 +10,7 @@ function fileToDataUrl(file) {
   });
 }
 
-export default function ProjectComposer({ colors, onAdded }) {
+export default function ProjectComposer({ colors, onAdded, authToken, onLogout }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
@@ -66,7 +66,7 @@ export default function ProjectComposer({ colors, onAdded }) {
     try {
       const res = await fetch("/api/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-auth-token": authToken || "" },
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim(),
@@ -119,9 +119,29 @@ export default function ProjectComposer({ colors, onAdded }) {
         background: colors.surface,
       }}
     >
-      <p style={{ fontSize: 13, color: colors.amber, margin: "0 0 4px", fontWeight: 700 }}>
-        Add a project
-      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <p style={{ fontSize: 13, color: colors.amber, margin: "0 0 4px", fontWeight: 700 }}>
+          Add a project
+        </p>
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            style={{
+              background: "none",
+              border: "none",
+              color: colors.textMuted,
+              fontSize: 11.5,
+              textDecoration: "underline",
+              cursor: "pointer",
+              fontFamily: "'Space Mono', monospace",
+              padding: 0,
+            }}
+          >
+            Log out
+          </button>
+        )}
+      </div>
       <p style={{ fontSize: 12.5, color: colors.textMuted, margin: "0 0 20px", lineHeight: 1.7 }}>
         Fill this in and submit &mdash; it saves straight to the database and
         shows up above right away, for anyone who visits the site.

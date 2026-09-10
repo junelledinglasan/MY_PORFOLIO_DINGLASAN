@@ -38,6 +38,15 @@ export default async function handler(req, res) {
 
   if (req.method === "POST") {
     try {
+      const authToken = req.headers["x-auth-token"];
+      const authRows = await sql`
+        SELECT session_token FROM admin_auth WHERE id = 1;
+      `.catch(() => []);
+      if (!authToken || authRows.length === 0 || authRows[0].session_token !== authToken) {
+        res.status(401).json({ error: "Not authorized." });
+        return;
+      }
+
       const { title, description, tags, link, fileName, fileData, images } = req.body || {};
       if (!title || !String(title).trim()) {
         res.status(400).json({ error: "Title is required." });
