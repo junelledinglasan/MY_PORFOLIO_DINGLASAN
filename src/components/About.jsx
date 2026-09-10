@@ -4,9 +4,9 @@ import profileImg from "../assets/profile.png";
 
 const SKILL_GROUPS = [
   { icon: Code2, label: "Frontend", items: ["React", "Flutter", "Tailwind CSS", "Vite"] },
-  { icon: Database, label: "Backend & data", items: ["Django REST", "PostgreSQL", "Supabase"] },
+  { icon: Database, label: "Backend & data", items: ["Django REST", "Python", "PostgreSQL", "Supabase"] },
   { icon: Wallet, label: "Blockchain", items: ["Solidity", "Web3.py", "MetaMask", "Polygon"] },
-  { icon: Wrench, label: "Tools & flow", items: ["Git", "Android Studio", "Agile Scrum", "Figma"] },
+  { icon: Wrench, label: "Tools & flow", items: ["Git", "Java", "Android Studio", "Agile Scrum", "Figma"] },
 ];
 
 export default function About({ colors, mode, loaded }) {

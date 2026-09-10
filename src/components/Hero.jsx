@@ -8,11 +8,11 @@ const ROLE_LINES = [
   "is training to turn code into a company.",
 ];
 
-const STACK = ["React", "Django", "PostgreSQL", "Flutter", "Solidity", "Web3.py", "Supabase", "Tailwind"];
+const STACK = ["React", "Django", "PostgreSQL", "Flutter", "Solidity", "Web3.py", "Supabase", "Tailwind", "Python", "Java"];
 
 const STATS = [
   { value: "3", label: "platforms shipped\n(web, mobile, chain)" },
-  { value: "8", label: "tools in my\ncore stack" },
+  { value: "10", label: "tools in my\ncore stack" },
   { value: "2027", label: "graduating,\nopen to work" },
 ];
 
@@ -226,7 +226,7 @@ export default function Hero({ colors, loaded }) {
       </div>
 
       <div style={{ marginTop: 70, borderTop: `1px solid ${colors.line}`, borderBottom: `1px solid ${colors.line}`, padding: "24px 0" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
           {STACK.map((tech, i) => (
             <span
               key={i}
