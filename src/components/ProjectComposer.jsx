@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Upload, Paperclip, X, Check } from "lucide-react";
 
 function fileToDataUrl(file) {
@@ -10,18 +10,31 @@ function fileToDataUrl(file) {
   });
 }
 
-export default function ProjectComposer({ colors, onAdded, authToken, onLogout }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [tags, setTags] = useState("");
-  const [link, setLink] = useState("");
-  const [images, setImages] = useState([]);
-  const [file, setFile] = useState(null);
+export default function ProjectComposer({ colors, onAdded, onLogout, authToken, initialProject, onCancel }) {
+  const isEditing = Boolean(initialProject);
+
+  const [title, setTitle] = useState(initialProject?.title || "");
+  const [description, setDescription] = useState(initialProject?.description || "");
+  const [tags, setTags] = useState(initialProject?.tags ? initialProject.tags.join(", ") : "");
+  const [link, setLink] = useState(initialProject?.link || "");
+  const [images, setImages] = useState(initialProject?.images || []);
+  const [file, setFile] = useState(
+    initialProject?.fileData ? { name: initialProject.fileName, dataUrl: initialProject.fileData, size: 0 } : null
+  );
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setTitle(initialProject?.title || "");
+    setDescription(initialProject?.description || "");
+    setTags(initialProject?.tags ? initialProject.tags.join(", ") : "");
+    setLink(initialProject?.link || "");
+    setImages(initialProject?.images || []);
+    setFile(initialProject?.fileData ? { name: initialProject.fileName, dataUrl: initialProject.fileData, size: 0 } : null);
+  }, [initialProject]);
 
   const handleImages = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -63,25 +76,29 @@ export default function ProjectComposer({ colors, onAdded, authToken, onLogout }
       .map((t) => t.trim())
       .filter(Boolean);
 
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      tags: tagList,
+      link: link.trim(),
+      fileName: file ? file.name : "",
+      fileData: file ? file.dataUrl : "",
+      images,
+    };
+
     try {
-      const res = await fetch("/api/projects", {
-        method: "POST",
+      const url = isEditing ? `/api/projects?id=${initialProject.id}` : "/api/projects";
+      const method = isEditing ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json", "x-auth-token": authToken || "" },
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim(),
-          tags: tagList,
-          link: link.trim(),
-          fileName: file ? file.name : "",
-          fileData: file ? file.dataUrl : "",
-          images,
-        }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || "Something went wrong.");
       }
-      resetForm();
+      if (!isEditing) resetForm();
       setSuccess(true);
       onAdded && onAdded();
       setTimeout(() => setSuccess(false), 2500);
@@ -98,7 +115,7 @@ export default function ProjectComposer({ colors, onAdded, authToken, onLogout }
 
   const inputStyle = {
     width: "100%",
-    background: colors.surface,
+    background: colors.bg,
     border: `1px solid ${colors.line}`,
     color: colors.text,
     padding: "10px 12px",
@@ -117,11 +134,12 @@ export default function ProjectComposer({ colors, onAdded, authToken, onLogout }
         border: `1px solid ${colors.line}`,
         padding: "24px 26px",
         background: colors.surface,
+        maxWidth: 560,
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <p style={{ fontSize: 13, color: colors.amber, margin: "0 0 4px", fontWeight: 700 }}>
-          Add a project
+          {isEditing ? "Edit project" : "Add a project"}
         </p>
         {onLogout && (
           <button
@@ -143,11 +161,12 @@ export default function ProjectComposer({ colors, onAdded, authToken, onLogout }
         )}
       </div>
       <p style={{ fontSize: 12.5, color: colors.textMuted, margin: "0 0 20px", lineHeight: 1.7 }}>
-        Fill this in and submit &mdash; it saves straight to the database and
-        shows up above right away, for anyone who visits the site.
+        {isEditing
+          ? "Update the details below and save."
+          : "Fill this in and submit \u2014 it saves straight to the database and shows up above right away, for anyone who visits the site."}
       </p>
 
-      <div style={{ display: "grid", gap: 16, maxWidth: 520 }}>
+      <div style={{ display: "grid", gap: 16 }}>
         <label style={labelStyle}>
           Title
           <input style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Weekend recipe finder" />
@@ -265,34 +284,52 @@ export default function ProjectComposer({ colors, onAdded, authToken, onLogout }
         </div>
       </div>
 
-      {error && <p style={{ fontSize: 12.5, color: "#E24B4A", marginTop: 16, maxWidth: 480, lineHeight: 1.6 }}>{error}</p>}
+      {error && <p style={{ fontSize: 12.5, color: "#E24B4A", marginTop: 16, lineHeight: 1.6 }}>{error}</p>}
       {success && (
         <p style={{ fontSize: 12.5, color: colors.lime, marginTop: 16, display: "flex", alignItems: "center", gap: 6 }}>
-          <Check size={14} /> Added &mdash; it's live above.
+          <Check size={14} /> Saved &mdash; it's live above.
         </p>
       )}
 
-      <button
-        type="button"
-        data-cursor-hover
-        onClick={submit}
-        disabled={submitting}
-        className="jd-btn"
-        style={{
-          marginTop: 20,
-          background: colors.lime,
-          color: colors.bg,
-          border: "none",
-          padding: "11px 20px",
-          borderRadius: 2,
-          fontFamily: "'Space Mono', monospace",
-          fontSize: 13,
-          fontWeight: 700,
-          opacity: submitting ? 0.6 : 1,
-        }}
-      >
-        {submitting ? "Saving\u2026" : "Add project"}
-      </button>
+      <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+        <button
+          type="button"
+          data-cursor-hover
+          onClick={submit}
+          disabled={submitting}
+          className="jd-btn"
+          style={{
+            background: colors.lime,
+            color: colors.bg,
+            border: "none",
+            padding: "11px 20px",
+            borderRadius: 2,
+            fontFamily: "'Space Mono', monospace",
+            fontSize: 13,
+            fontWeight: 700,
+            opacity: submitting ? 0.6 : 1,
+          }}
+        >
+          {submitting ? "Saving\u2026" : isEditing ? "Save changes" : "Add project"}
+        </button>
+        {isEditing && onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              background: "transparent",
+              color: colors.textMuted,
+              border: `1px solid ${colors.line}`,
+              padding: "11px 20px",
+              borderRadius: 2,
+              fontFamily: "'Space Mono', monospace",
+              fontSize: 13,
+            }}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </div>
   );
 }

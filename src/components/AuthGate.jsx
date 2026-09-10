@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 
-export default function AuthGate({ colors, children }) {
+export default function AuthGate({ colors, children, onUnlock }) {
   const [token, setToken] = useState(() => sessionStorage.getItem("jd_admin_token") || "");
   const [configured, setConfigured] = useState(null);
   const [mode, setMode] = useState("login");
@@ -26,6 +26,10 @@ export default function AuthGate({ colors, children }) {
         setMode(data.configured ? "login" : "setup");
       })
       .catch(() => setConfigured(false));
+  }, [token]);
+
+  useEffect(() => {
+    if (token && onUnlock) onUnlock(token);
   }, [token]);
 
   const logout = () => {

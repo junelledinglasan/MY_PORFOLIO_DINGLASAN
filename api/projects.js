@@ -2,6 +2,12 @@ import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
 
+async function isAuthorized(req) {
+  const authToken = req.headers["x-auth-token"];
+  const rows = await sql`SELECT session_token FROM admin_auth WHERE id = 1;`.catch(() => []);
+  return Boolean(authToken) && rows.length > 0 && rows[0].session_token === authToken;
+}
+
 export default async function handler(req, res) {
   if (req.method === "GET") {
     try {
@@ -38,11 +44,7 @@ export default async function handler(req, res) {
 
   if (req.method === "POST") {
     try {
-      const authToken = req.headers["x-auth-token"];
-      const authRows = await sql`
-        SELECT session_token FROM admin_auth WHERE id = 1;
-      `.catch(() => []);
-      if (!authToken || authRows.length === 0 || authRows[0].session_token !== authToken) {
+      if (!(await isAuthorized(req))) {
         res.status(401).json({ error: "Not authorized." });
         return;
       }
@@ -88,6 +90,61 @@ export default async function handler(req, res) {
     return;
   }
 
-  res.setHeader("Allow", ["GET", "POST"]);
+  if (req.method === "PUT") {
+    try {
+      if (!(await isAuthorized(req))) {
+        res.status(401).json({ error: "Not authorized." });
+        return;
+      }
+      const id = req.query.id;
+      if (!id) {
+        res.status(400).json({ error: "Missing project id." });
+        return;
+      }
+      const { title, description, tags, link, fileName, fileData, images } = req.body || {};
+      if (!title || !String(title).trim()) {
+        res.status(400).json({ error: "Title is required." });
+        return;
+      }
+
+      await sql`
+        UPDATE projects SET
+          title = ${title},
+          description = ${description || ""},
+          tags = ${JSON.stringify(tags || [])}::jsonb,
+          link = ${link || ""},
+          file_name = ${fileName || ""},
+          file_data = ${fileData || ""},
+          images = ${JSON.stringify(images || [])}::jsonb
+        WHERE id = ${id};
+      `;
+
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+    return;
+  }
+
+  if (req.method === "DELETE") {
+    try {
+      if (!(await isAuthorized(req))) {
+        res.status(401).json({ error: "Not authorized." });
+        return;
+      }
+      const id = req.query.id;
+      if (!id) {
+        res.status(400).json({ error: "Missing project id." });
+        return;
+      }
+      await sql`DELETE FROM projects WHERE id = ${id};`;
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+    return;
+  }
+
+  res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
   res.status(405).json({ error: "Method not allowed" });
 }

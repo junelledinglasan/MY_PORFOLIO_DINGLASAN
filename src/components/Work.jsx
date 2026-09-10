@@ -1,18 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { ExternalLink, FileDown, Plus, X } from "lucide-react";
+import { ExternalLink, FileDown, Plus, X, Pencil, Trash2 } from "lucide-react";
 import ProjectComposer from "./ProjectComposer";
 import AuthGate from "./AuthGate";
 
 function ImageGallery({ images, colors }) {
   if (!images || images.length === 0) return null;
 
+  const frameStyle = {
+    background: colors.bg,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  };
+
   if (images.length === 1) {
     return (
-      <img
-        src={images[0]}
-        alt=""
-        style={{ width: "100%", height: 240, objectFit: "cover", objectPosition: "center", display: "block" }}
-      />
+      <div style={{ ...frameStyle, height: 220 }}>
+        <img
+          src={images[0]}
+          alt=""
+          style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
+        />
+      </div>
     );
   }
 
@@ -20,25 +30,29 @@ function ImageGallery({ images, colors }) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
         {images.map((src, i) => (
-          <img key={i} src={src} alt="" style={{ width: "100%", height: 220, objectFit: "cover", display: "block" }} />
+          <div key={i} style={{ ...frameStyle, height: 200 }}>
+            <img src={src} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 2, height: 260 }}>
-      <img src={images[0]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+    <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 2, height: 240 }}>
+      <div style={{ ...frameStyle, height: "100%" }}>
+        <img src={images[0]} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
+      </div>
       <div style={{ display: "grid", gridTemplateRows: images.length > 3 ? "1fr 1fr" : "1fr", gap: 2 }}>
         {images.slice(1, 3).map((src, i) => (
-          <div key={i} style={{ position: "relative" }}>
-            <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          <div key={i} style={{ position: "relative", ...frameStyle, height: "100%" }}>
+            <img src={src} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
             {i === 1 && images.length > 3 && (
               <div
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background: "rgba(0,0,0,0.5)",
+                  background: "rgba(0,0,0,0.55)",
                   color: "#fff",
                   display: "flex",
                   alignItems: "center",
@@ -57,15 +71,59 @@ function ImageGallery({ images, colors }) {
   );
 }
 
-function ProjectCard({ project, colors }) {
+function ProjectCard({ project, colors, isAdmin, onEdit, onDelete }) {
   const { title, description, tags, link, fileName, fileData, images } = project;
   return (
     <div className="jd-card" style={{ border: `1px solid ${colors.line}`, background: colors.surface }}>
       <ImageGallery images={images} colors={colors} />
       <div style={{ padding: "22px 24px" }}>
-        <h3 className="jd-serif" style={{ fontSize: 22, fontWeight: 600, margin: "0 0 10px" }}>
-          {title}
-        </h3>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+          <h3 className="jd-serif" style={{ fontSize: 22, fontWeight: 600, margin: "0 0 10px" }}>
+            {title}
+          </h3>
+          {isAdmin && (
+            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={onEdit}
+                aria-label="Edit project"
+                style={{
+                  background: "none",
+                  border: `1px solid ${colors.line}`,
+                  borderRadius: 2,
+                  width: 28,
+                  height: 28,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: colors.textMuted,
+                  cursor: "pointer",
+                }}
+              >
+                <Pencil size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={onDelete}
+                aria-label="Delete project"
+                style={{
+                  background: "none",
+                  border: `1px solid ${colors.line}`,
+                  borderRadius: 2,
+                  width: 28,
+                  height: 28,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#E24B4A",
+                  cursor: "pointer",
+                }}
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+          )}
+        </div>
         <p style={{ color: colors.textMuted, fontSize: 14, lineHeight: 1.75, margin: "0 0 16px" }}>
           {description}
         </p>
@@ -147,6 +205,8 @@ export default function Work({ colors, loaded }) {
   const [projects, setProjects] = useState([]);
   const [status, setStatus] = useState("loading");
   const [errorDetail, setErrorDetail] = useState("");
+  const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem("jd_admin_token") || "");
+  const [editingProject, setEditingProject] = useState(null);
 
   const loadProjects = async () => {
     setStatus("loading");
@@ -168,6 +228,32 @@ export default function Work({ colors, loaded }) {
   useEffect(() => {
     loadProjects();
   }, []);
+
+  const doLogout = () => {
+    sessionStorage.removeItem("jd_admin_token");
+    setAdminToken("");
+    setEditingProject(null);
+    setShowComposer(false);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this project? This can't be undone.")) return;
+    try {
+      const res = await fetch(`/api/projects?id=${id}`, {
+        method: "DELETE",
+        headers: { "x-auth-token": adminToken },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Delete failed.");
+      }
+      loadProjects();
+    } catch (err) {
+      alert("Couldn't delete that: " + err.message);
+    }
+  };
+
+  const showingAddButton = !editingProject;
 
   return (
     <section id="work" style={{ padding: "10vh 6vw" }}>
@@ -200,40 +286,89 @@ export default function Work({ colors, loaded }) {
       {status === "ready" && projects.length > 0 && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} colors={colors} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              colors={colors}
+              isAdmin={Boolean(adminToken)}
+              onEdit={() => {
+                setEditingProject(project);
+                setShowComposer(false);
+              }}
+              onDelete={() => handleDelete(project.id)}
+            />
           ))}
         </div>
       )}
 
-      <div style={{ marginTop: 32 }}>
-        <button
-          data-cursor-hover
-          onClick={() => setShowComposer((v) => !v)}
-          className="jd-btn"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 12.5,
-            color: colors.textMuted,
-            background: "transparent",
-            border: `1px dashed ${colors.line}`,
-            borderRadius: 2,
-            padding: "12px 18px",
-            fontFamily: "'Space Mono', monospace",
-          }}
-        >
-          {showComposer ? <X size={14} /> : <Plus size={14} />}
-          {showComposer ? "Close" : "Add a project (only you should see this)"}
-        </button>
-      </div>
+      {showingAddButton && (
+        <div style={{ marginTop: 32 }}>
+          <button
+            data-cursor-hover
+            onClick={() => setShowComposer((v) => !v)}
+            className="jd-btn"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 12.5,
+              color: colors.textMuted,
+              background: "transparent",
+              border: `1px dashed ${colors.line}`,
+              borderRadius: 2,
+              padding: "12px 18px",
+              fontFamily: "'Space Mono', monospace",
+            }}
+          >
+            {showComposer ? <X size={14} /> : <Plus size={14} />}
+            {showComposer ? "Close" : "Add a project (only you should see this)"}
+          </button>
+        </div>
+      )}
 
-      {showComposer && (
-        <AuthGate colors={colors}>
+      {showComposer && !adminToken && (
+        <AuthGate colors={colors} onUnlock={setAdminToken}>
           {(token, logout) => (
-            <ProjectComposer colors={colors} onAdded={loadProjects} authToken={token} onLogout={logout} />
+            <ProjectComposer
+              colors={colors}
+              authToken={token}
+              onAdded={() => {
+                loadProjects();
+                setShowComposer(false);
+              }}
+              onLogout={() => {
+                logout();
+                doLogout();
+              }}
+            />
           )}
         </AuthGate>
+      )}
+
+      {showComposer && adminToken && (
+        <ProjectComposer
+          colors={colors}
+          authToken={adminToken}
+          onAdded={() => {
+            loadProjects();
+            setShowComposer(false);
+          }}
+          onLogout={doLogout}
+        />
+      )}
+
+      {editingProject && (
+        <ProjectComposer
+          colors={colors}
+          authToken={adminToken}
+          initialProject={editingProject}
+          onCancel={() => setEditingProject(null)}
+          onAdded={() => {
+            loadProjects();
+            setEditingProject(null);
+          }}
+          onLogout={doLogout}
+        />
       )}
     </section>
   );
