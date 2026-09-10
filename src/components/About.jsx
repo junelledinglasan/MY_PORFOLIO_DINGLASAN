@@ -11,8 +11,8 @@ const SKILL_GROUPS = [
 
 export default function About({ colors, mode, loaded }) {
   return (
-    <section id="about" style={{ padding: "10vh 6vw" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "0.85fr 1.15fr", gap: "5vw", alignItems: "start" }}>
+    <section id="about" style={{ padding: "7vh 6vw" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "0.85fr 1.15fr", gap: "4vw", alignItems: "start" }}>
         <div style={{ position: "relative", animation: loaded ? "jd-rise 0.7s ease both" : "none" }}>
           <div
             aria-hidden="true"
@@ -62,7 +62,7 @@ export default function About({ colors, mode, loaded }) {
         </div>
 
         <div style={{ animation: loaded ? "jd-rise 0.7s ease 0.12s both" : "none" }}>
-          <p style={{ color: colors.amber, fontSize: 13, letterSpacing: 0.4, margin: "0 0 16px" }}>
+          <p style={{ color: colors.amber, fontSize: 13, letterSpacing: 0.4, margin: "0 0 12px" }}>
             About me
           </p>
           <h2
@@ -70,14 +70,14 @@ export default function About({ colors, mode, loaded }) {
             style={{
               fontSize: "clamp(2rem, 3.6vw, 3rem)",
               lineHeight: 1.15,
-              margin: "0 0 24px",
+              margin: "0 0 18px",
               fontWeight: 480,
               maxWidth: 560,
             }}
           >
             I like software that people actually rely on, not just demos.
           </h2>
-          <p style={{ color: colors.textMuted, fontSize: 15, lineHeight: 1.8, maxWidth: 560, margin: "0 0 20px" }}>
+          <p style={{ color: colors.textMuted, fontSize: 15, lineHeight: 1.7, maxWidth: 560, margin: "0 0 14px" }}>
             I'm an IT student in Lucena City, finishing a BSIT degree at the
             Dalubhasaan ng Lungsod ng Lucena, graduating in 2027. Most of my
             time these days goes into a capstone project that runs a real
@@ -86,7 +86,7 @@ export default function About({ colors, mode, loaded }) {
             a Django backend, with a Polygon smart contract handling part of
             the payment flow.
           </p>
-          <p style={{ color: colors.textMuted, fontSize: 15, lineHeight: 1.8, maxWidth: 560, margin: "0 0 40px" }}>
+          <p style={{ color: colors.textMuted, fontSize: 15, lineHeight: 1.7, maxWidth: 560, margin: "0 0 22px" }}>
             The capstone isn't the only thing I work on &mdash; I like picking
             up new tools and trying things outside of it too. I'm also taking
             Technopreneurship classes, which got me thinking beyond just
@@ -96,7 +96,7 @@ export default function About({ colors, mode, loaded }) {
             learning new things that help me grow, whether that's a new
             framework, tool, or skill.
           </p>
-          <p style={{ color: colors.textMuted, fontSize: 15, lineHeight: 1.8, maxWidth: 560, margin: "0 0 40px" }}>
+          <p style={{ color: colors.textMuted, fontSize: 15, lineHeight: 1.7, maxWidth: 560, margin: "0 0 22px" }}>
             Outside of coding, I'm usually watching a drama, playing Mobile
             Legends, or coding with music on so I don't get bored. I got into
             building software out of curiosity &mdash; wanting to know if I
@@ -118,7 +118,7 @@ export default function About({ colors, mode, loaded }) {
               alignItems: "flex-start",
               border: `1px solid ${colors.line}`,
               padding: "16px 18px",
-              marginBottom: 44,
+              marginBottom: 28,
               maxWidth: 560,
             }}
           >
@@ -133,20 +133,20 @@ export default function About({ colors, mode, loaded }) {
             </div>
           </div>
 
-          <p style={{ color: colors.amber, fontSize: 13, letterSpacing: 0.4, margin: "0 0 18px" }}>
+          <p style={{ color: colors.amber, fontSize: 13, letterSpacing: 0.4, margin: "0 0 14px" }}>
             What I work with
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {SKILL_GROUPS.map(({ icon: Icon, label, items }) => (
               <div
                 key={label}
                 className="jd-card"
                 style={{
                   border: `1px solid ${colors.line}`,
-                  padding: "16px 18px",
+                  padding: "14px 16px",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                   <Icon size={16} color={colors.lime} />
                   <span style={{ fontSize: 13, fontWeight: 700 }}>{label}</span>
                 </div>
