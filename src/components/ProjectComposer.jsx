@@ -218,10 +218,21 @@ export default function ProjectComposer({ colors, onAdded, onLogout, authToken, 
           <input ref={imageInputRef} type="file" accept="image/*" multiple onChange={handleImages} style={{ display: "none" }} />
 
           {images.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, 64px)",
+                gap: 14,
+                marginTop: 12,
+                maxHeight: 224,
+                overflowY: "auto",
+                paddingTop: 4,
+                paddingRight: 4,
+              }}
+            >
               {images.map((src, i) => (
                 <div key={i} style={{ position: "relative" }}>
-                  <img src={src} alt="" style={{ width: 64, height: 64, objectFit: "cover", border: `1px solid ${colors.line}` }} />
+                  <img src={src} alt="" style={{ width: 64, height: 64, objectFit: "cover", border: `1px solid ${colors.line}`, display: "block" }} />
                   <button
                     type="button"
                     onClick={() => removeImage(i)}

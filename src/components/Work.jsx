@@ -3,36 +3,53 @@ import { ExternalLink, FileDown, Plus, X, Pencil, Trash2 } from "lucide-react";
 import ProjectComposer from "./ProjectComposer";
 import AuthGate from "./AuthGate";
 
-function ImageGallery({ images, colors }) {
+function Frame({ src, height, colors, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{ position: "relative", height, overflow: "hidden", background: colors.bg, cursor: onClick ? "pointer" : "default" }}
+    >
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          filter: "blur(24px) brightness(0.45)",
+          transform: "scale(1.15)",
+        }}
+      />
+      <img
+        src={src}
+        alt=""
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          display: "block",
+        }}
+      />
+    </div>
+  );
+}
+
+function ImageGallery({ images, colors, onImageClick }) {
   if (!images || images.length === 0) return null;
 
-  const frameStyle = {
-    background: colors.bg,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  };
-
   if (images.length === 1) {
-    return (
-      <div style={{ ...frameStyle, height: 220 }}>
-        <img
-          src={images[0]}
-          alt=""
-          style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
-        />
-      </div>
-    );
+    return <Frame src={images[0]} height={220} colors={colors} onClick={() => onImageClick(0)} />;
   }
 
   if (images.length === 2) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
         {images.map((src, i) => (
-          <div key={i} style={{ ...frameStyle, height: 200 }}>
-            <img src={src} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
-          </div>
+          <Frame key={i} src={src} height={200} colors={colors} onClick={() => onImageClick(i)} />
         ))}
       </div>
     );
@@ -40,15 +57,14 @@ function ImageGallery({ images, colors }) {
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 2, height: 240 }}>
-      <div style={{ ...frameStyle, height: "100%" }}>
-        <img src={images[0]} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
-      </div>
+      <Frame src={images[0]} height="100%" colors={colors} onClick={() => onImageClick(0)} />
       <div style={{ display: "grid", gridTemplateRows: images.length > 3 ? "1fr 1fr" : "1fr", gap: 2 }}>
         {images.slice(1, 3).map((src, i) => (
-          <div key={i} style={{ position: "relative", ...frameStyle, height: "100%" }}>
-            <img src={src} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
+          <div key={i} style={{ position: "relative" }}>
+            <Frame src={src} height="100%" colors={colors} onClick={() => onImageClick(i + 1)} />
             {i === 1 && images.length > 3 && (
               <div
+                onClick={() => onImageClick(3)}
                 style={{
                   position: "absolute",
                   inset: 0,
@@ -59,6 +75,7 @@ function ImageGallery({ images, colors }) {
                   justifyContent: "center",
                   fontSize: 18,
                   fontWeight: 700,
+                  cursor: "pointer",
                 }}
               >
                 +{images.length - 3}
@@ -71,11 +88,131 @@ function ImageGallery({ images, colors }) {
   );
 }
 
-function ProjectCard({ project, colors, isAdmin, onEdit, onDelete }) {
+function Lightbox({ images, index, onClose, onNav, colors }) {
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") onNav(1);
+      if (e.key === "ArrowLeft") onNav(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose, onNav]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.88)",
+        zIndex: 200,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          background: "none",
+          border: `1px solid ${colors.line}`,
+          borderRadius: "50%",
+          width: 36,
+          height: 36,
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+        }}
+      >
+        <X size={16} />
+      </button>
+
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNav(-1);
+            }}
+            aria-label="Previous image"
+            style={{
+              position: "absolute",
+              left: 16,
+              background: "none",
+              border: `1px solid ${colors.line}`,
+              borderRadius: "50%",
+              width: 40,
+              height: 40,
+              color: "#fff",
+              fontSize: 18,
+              cursor: "pointer",
+            }}
+          >
+            &lsaquo;
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNav(1);
+            }}
+            aria-label="Next image"
+            style={{
+              position: "absolute",
+              right: 16,
+              background: "none",
+              border: `1px solid ${colors.line}`,
+              borderRadius: "50%",
+              width: 40,
+              height: 40,
+              color: "#fff",
+              fontSize: 18,
+              cursor: "pointer",
+            }}
+          >
+            &rsaquo;
+          </button>
+        </>
+      )}
+
+      <img
+        src={images[index]}
+        alt=""
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: "88vw", maxHeight: "84vh", objectFit: "contain" }}
+      />
+
+      {images.length > 1 && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 20,
+            color: colors.textMuted,
+            fontSize: 12,
+            fontFamily: "'Space Mono', monospace",
+          }}
+        >
+          {index + 1} / {images.length}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProjectCard({ project, colors, isAdmin, onEdit, onDelete, onImageClick }) {
   const { title, description, tags, link, fileName, fileData, images } = project;
   return (
     <div className="jd-card" style={{ border: `1px solid ${colors.line}`, background: colors.surface }}>
-      <ImageGallery images={images} colors={colors} />
+      <ImageGallery images={images} colors={colors} onImageClick={onImageClick} />
       <div style={{ padding: "22px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
           <h3 className="jd-serif" style={{ fontSize: 22, fontWeight: 600, margin: "0 0 10px" }}>
@@ -207,6 +344,7 @@ export default function Work({ colors, loaded }) {
   const [errorDetail, setErrorDetail] = useState("");
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem("jd_admin_token") || "");
   const [editingProject, setEditingProject] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
 
   const loadProjects = async () => {
     setStatus("loading");
@@ -296,6 +434,7 @@ export default function Work({ colors, loaded }) {
                 setShowComposer(false);
               }}
               onDelete={() => handleDelete(project.id)}
+              onImageClick={(idx) => setLightbox({ images: project.images, index: idx })}
             />
           ))}
         </div>
@@ -368,6 +507,21 @@ export default function Work({ colors, loaded }) {
             setEditingProject(null);
           }}
           onLogout={doLogout}
+        />
+      )}
+
+      {lightbox && (
+        <Lightbox
+          images={lightbox.images}
+          index={lightbox.index}
+          colors={colors}
+          onClose={() => setLightbox(null)}
+          onNav={(dir) =>
+            setLightbox((prev) => ({
+              ...prev,
+              index: (prev.index + dir + prev.images.length) % prev.images.length,
+            }))
+          }
         />
       )}
     </section>
