@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowDownRight, Github, Linkedin, Mail, Sparkle } from "lucide-react";
+import { ArrowDownRight } from "lucide-react";
 
 const ROLE_LINES = [
   "builds software for cooperatives managing shared money.",
@@ -107,11 +107,11 @@ export default function Hero({ colors, loaded }) {
             </span>
           </h1>
           <p style={{ color: colors.textMuted, fontSize: 15, lineHeight: 1.75, maxWidth: 480, margin: "0 0 30px" }}>
-            Full-stack developer finishing a capstone that runs a real
-            agricultural cooperative &mdash; loans, payments, and members &mdash;
-            on React, Django, and Flutter, with a Polygon smart contract handling
-            payments. Currently also learning how to build the business around
-            the code.
+            Full-stack developer working across React, Django, Flutter, and a
+            bit of blockchain. My capstone &mdash; a payments and loan system
+            for a real agricultural cooperative &mdash; is the biggest thing
+            I've built so far, but I'm always exploring other small projects
+            on the side and picking up new tools as I go.
           </p>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 40 }}>
             <a
@@ -225,12 +225,9 @@ export default function Hero({ colors, loaded }) {
         </div>
       </div>
 
-      <div style={{ marginTop: 70, borderTop: `1px solid ${colors.line}`, borderBottom: `1px solid ${colors.line}`, padding: "18px 0", overflow: "hidden" }}>
-        <div
-          className="jd-marquee-track"
-          style={{ display: "flex", gap: 14, width: "max-content", animation: "jd-marquee 22s linear infinite" }}
-        >
-          {[...STACK, ...STACK].map((tech, i) => (
+      <div style={{ marginTop: 70, borderTop: `1px solid ${colors.line}`, borderBottom: `1px solid ${colors.line}`, padding: "24px 0" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          {STACK.map((tech, i) => (
             <span
               key={i}
               data-cursor-hover
@@ -238,16 +235,18 @@ export default function Hero({ colors, loaded }) {
               style={{
                 border: `1px solid ${colors.line}`,
                 borderRadius: 999,
-                padding: "8px 18px",
-                fontSize: 12,
-                color: colors.textMuted,
+                padding: "9px 20px",
+                fontSize: 12.5,
+                fontWeight: 700,
+                color: colors.lime,
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
+                gap: 8,
                 whiteSpace: "nowrap",
               }}
             >
-              <Sparkle size={11} color={colors.lime} /> {tech}
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: colors.lime, flexShrink: 0 }} />
+              {tech}
             </span>
           ))}
         </div>
