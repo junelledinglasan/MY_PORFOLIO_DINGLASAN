@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Github, Linkedin, Facebook, Mail, Send, Pencil, Check } from "lucide-react";
+import { Github, Linkedin, Facebook, Mail, Send, Pencil, Check, Inbox, Trash2 } from "lucide-react";
 import AuthGate from "./AuthGate";
 
 function ContactLinks({ colors, settings }) {
@@ -154,6 +154,101 @@ function SettingsEditor({ colors, authToken, settings, onSaved, onCancel }) {
   );
 }
 
+function MessagesInbox({ colors, authToken }) {
+  const [messages, setMessages] = useState([]);
+  const [status, setStatus] = useState("loading");
+
+  const load = async () => {
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/messages", {
+        headers: { "x-auth-token": authToken || "" },
+      });
+      if (!res.ok) throw new Error("Couldn't load messages.");
+      const data = await res.json();
+      setMessages(data);
+      setStatus("ready");
+    } catch (err) {
+      setStatus("error");
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, [authToken]);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this message?")) return;
+    try {
+      await fetch(`/api/messages?id=${id}`, {
+        method: "DELETE",
+        headers: { "x-auth-token": authToken || "" },
+      });
+      load();
+    } catch (err) {
+      alert("Couldn't delete that.");
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 18, border: `1px solid ${colors.line}`, background: colors.surface, padding: "20px 22px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <Inbox size={15} color={colors.lime} />
+        <p style={{ fontSize: 13, color: colors.amber, margin: 0, fontWeight: 700 }}>
+          Messages ({messages.length})
+        </p>
+      </div>
+
+      {status === "loading" && <p style={{ color: colors.textMuted, fontSize: 12.5 }}>Loading&hellip;</p>}
+      {status === "error" && <p style={{ color: "#E24B4A", fontSize: 12.5 }}>Couldn't load messages.</p>}
+      {status === "ready" && messages.length === 0 && (
+        <p style={{ color: colors.textMuted, fontSize: 12.5 }}>No messages yet.</p>
+      )}
+
+      {status === "ready" && messages.length > 0 && (
+        <div style={{ display: "grid", gap: 12, maxHeight: 340, overflowY: "auto" }}>
+          {messages.map((m) => (
+            <div key={m.id} style={{ border: `1px solid ${colors.line}`, padding: "12px 14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>{m.name}</p>
+                  <a href={`mailto:${m.email}`} style={{ fontSize: 11.5, color: colors.lime, textDecoration: "none" }}>
+                    {m.email}
+                  </a>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(m.id)}
+                  aria-label="Delete message"
+                  style={{
+                    background: "none",
+                    border: `1px solid ${colors.line}`,
+                    borderRadius: 2,
+                    width: 26,
+                    height: 26,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#E24B4A",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+              <p style={{ margin: "8px 0 4px", fontSize: 12.5, color: colors.textMuted, lineHeight: 1.6 }}>{m.message}</p>
+              <p style={{ margin: 0, fontSize: 10.5, color: colors.textMuted, opacity: 0.7 }}>
+                {new Date(m.createdAt).toLocaleString()}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Contact({ colors, loaded }) {
   const [settings, setSettings] = useState({ email: "", github: "", linkedin: "", facebook: "" });
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem("jd_admin_token") || "");
@@ -165,6 +260,7 @@ export default function Contact({ colors, loaded }) {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState("");
+  const [showInbox, setShowInbox] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -184,22 +280,13 @@ export default function Contact({ colors, loaded }) {
       setFormError("Enter a valid email address.");
       return;
     }
-    if (!settings.email) {
-      setFormError("No contact email has been set up yet.");
-      return;
-    }
     setFormError("");
     setSending(true);
     try {
-      const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(settings.email)}`, {
+      const res = await fetch("/api/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          name,
-          email: fromEmail,
-          message,
-          _subject: `New message from ${name} via your portfolio`,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email: fromEmail, message }),
       });
       if (!res.ok) throw new Error("Send failed.");
       setSent(true);
@@ -348,6 +435,37 @@ export default function Contact({ colors, loaded }) {
           </button>
         </form>
       </div>
+
+      {!showInbox && (
+        <button
+          type="button"
+          onClick={() => setShowInbox(true)}
+          style={{
+            marginTop: 32,
+            background: "none",
+            border: `1px dashed ${colors.line}`,
+            borderRadius: 2,
+            color: colors.textMuted,
+            fontSize: 11.5,
+            cursor: "pointer",
+            fontFamily: "'Space Mono', monospace",
+            padding: "10px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <Inbox size={13} /> View messages (only you should see this)
+        </button>
+      )}
+
+      {showInbox && !adminToken && (
+        <AuthGate colors={colors} onUnlock={setAdminToken}>
+          {() => <MessagesInbox colors={colors} authToken={sessionStorage.getItem("jd_admin_token")} />}
+        </AuthGate>
+      )}
+
+      {showInbox && adminToken && <MessagesInbox colors={colors} authToken={adminToken} />}
     </section>
   );
 }
