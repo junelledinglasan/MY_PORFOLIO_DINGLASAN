@@ -3,87 +3,42 @@ import { ExternalLink, FileDown, Plus, X, Pencil, Trash2 } from "lucide-react";
 import ProjectComposer from "./ProjectComposer";
 import AuthGate from "./AuthGate";
 
-function Frame({ src, height, colors, onClick }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{ position: "relative", height, overflow: "hidden", background: colors.bg, cursor: onClick ? "pointer" : "default" }}
-    >
-      <img
-        src={src}
-        alt=""
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          filter: "blur(24px) brightness(0.45)",
-          transform: "scale(1.15)",
-        }}
-      />
-      <img
-        src={src}
-        alt=""
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          display: "block",
-        }}
-      />
-    </div>
-  );
-}
-
 function ImageGallery({ images, colors, onImageClick }) {
   if (!images || images.length === 0) return null;
 
-  if (images.length === 1) {
-    return <Frame src={images[0]} height={220} colors={colors} onClick={() => onImageClick(0)} />;
-  }
-
-  if (images.length === 2) {
-    return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-        {images.map((src, i) => (
-          <Frame key={i} src={src} height={200} colors={colors} onClick={() => onImageClick(i)} />
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 2, height: 240 }}>
-      <Frame src={images[0]} height="100%" colors={colors} onClick={() => onImageClick(0)} />
-      <div style={{ display: "grid", gridTemplateRows: images.length > 3 ? "1fr 1fr" : "1fr", gap: 2 }}>
-        {images.slice(1, 3).map((src, i) => (
-          <div key={i} style={{ position: "relative" }}>
-            <Frame src={src} height="100%" colors={colors} onClick={() => onImageClick(i + 1)} />
-            {i === 1 && images.length > 3 && (
-              <div
-                onClick={() => onImageClick(3)}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "rgba(0,0,0,0.55)",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 18,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                +{images.length - 3}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+    <div
+      onClick={() => onImageClick(0)}
+      style={{
+        position: "relative",
+        height: 200,
+        overflow: "hidden",
+        background: colors.bg,
+        cursor: "pointer",
+      }}
+    >
+      <img
+        src={images[0]}
+        alt=""
+        style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
+      />
+      {images.length > 1 && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            right: 10,
+            background: "rgba(0,0,0,0.65)",
+            color: "#fff",
+            fontSize: 11,
+            fontFamily: "'Space Mono', monospace",
+            padding: "5px 10px",
+            borderRadius: 999,
+          }}
+        >
+          +{images.length - 1} photo{images.length - 1 > 1 ? "s" : ""}
+        </div>
+      )}
     </div>
   );
 }
@@ -211,7 +166,15 @@ function Lightbox({ images, index, onClose, onNav, colors }) {
 function ProjectCard({ project, colors, isAdmin, onEdit, onDelete, onImageClick }) {
   const { title, description, tags, link, fileName, fileData, images } = project;
   return (
-    <div className="jd-card" style={{ border: `1px solid ${colors.line}`, background: colors.surface }}>
+    <div
+      className="jd-card"
+      style={{
+        border: `1px solid ${colors.line}`,
+        background: colors.surface,
+        overflow: "hidden",
+        boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+      }}
+    >
       <ImageGallery images={images} colors={colors} onImageClick={onImageClick} />
       <div style={{ padding: "22px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
