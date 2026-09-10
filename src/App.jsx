@@ -4,11 +4,13 @@ import { PALETTE } from "./palette";
 import Hero from "./components/Hero";
 import About from "./components/About";
 import Work from "./components/Work";
+import Contact from "./components/Contact";
 
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
   { id: "about", label: "About" },
   { id: "work", label: "Work" },
+  { id: "contact", label: "Contact" },
 ];
 
 function useScrollProgress() {
@@ -191,6 +193,7 @@ export default function App() {
         <Hero colors={colors} loaded={loaded} />
         <About colors={colors} mode={mode} loaded={loaded} />
         <Work colors={colors} loaded={loaded} />
+        <Contact colors={colors} loaded={loaded} />
       </main>
     </div>
   );
