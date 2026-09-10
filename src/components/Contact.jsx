@@ -179,6 +179,11 @@ export default function Contact({ colors, loaded }) {
       setFormError("Fill in your name, email, and message.");
       return;
     }
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailPattern.test(fromEmail.trim())) {
+      setFormError("Enter a valid email address.");
+      return;
+    }
     if (!settings.email) {
       setFormError("No contact email has been set up yet.");
       return;

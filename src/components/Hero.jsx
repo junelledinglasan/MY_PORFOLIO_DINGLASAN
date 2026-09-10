@@ -98,6 +98,7 @@ export default function Hero({ colors, loaded }) {
               margin: "0 0 22px",
               fontWeight: 480,
               maxWidth: 660,
+              minHeight: "4.5em",
             }}
           >
             Junelle Dinglasan{" "}
